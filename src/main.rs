@@ -16,6 +16,7 @@ use rocket_contrib::databases::redis::{self, Commands};
 #[database("niccolgur_redis")]
 struct NiccDbConn(redis::Connection);
 
+#[derive(Debug)]
 struct User {
     id: String,
     nickname: String,
@@ -25,14 +26,14 @@ struct User {
 impl<'r> Responder<'r> for User {
     fn respond_to(self, _: &Request) -> response::Result<'r> {
         Response::build()
-            .sized_body(Cursor::new(format!("{}, {}, {}", self.id, self.nickname, self.bio)))
+            .sized_body(Cursor::new(format!("{:?}", self)))
             .header(ContentType::new("text", "plain"))
             .ok()
     }
 }
 
 impl User {
-    fn from_map(map: HashMap<String, String>) -> Option<User> {
+    fn from_map(map: &HashMap<String, String>) -> Option<User> {
         let nickname = map.get("nickname")?.to_string();
         let id = map.get(&nickname)?.to_string();
         let bio = map.get("bio")?.to_string();
@@ -55,7 +56,7 @@ fn user_id(conn: NiccDbConn, id: String) -> Option<User> {
         Ok(map) => map,
         Err(E) => panic!(),
     };
-    User::from_map(user_map)
+    User::from_map(&user_map)
 }
 
 fn main() {
