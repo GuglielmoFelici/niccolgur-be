@@ -26,7 +26,7 @@ impl User {
     }
 }
 
-impl<'r> Responder<'r> for User {
+impl<'r> Responder<'r> for User { // TODO
     fn respond_to(self, _: &Request) -> response::Result<'r> {
         Response::build()
             .sized_body(Cursor::new(format!("{:?}", self)))
