@@ -20,10 +20,14 @@ fn controllers() -> Vec<Route> {
     routes![
         /* HELLO */
         hello,
+        /* QUEUE */
+        users_queue,
         /* USER */
         user,
         users,
         users_full,
+        /* IMAGES */
+        image,
     ]
 }
 
