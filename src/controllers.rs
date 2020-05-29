@@ -14,6 +14,11 @@ pub fn hello() -> &'static str {
 /********************************************* Queue ***********************************************
 ***************************************************************************************************/
 
+#[get("/queue")]
+pub fn queue(conn: &NiccDbConn) -> Json<Vec<String>> {
+    Json(services::queue(&conn))
+}
+
 #[get("/queue/full")]
 pub fn users_queue(conn: NiccDbConn) -> Json<Vec<User>> {
     Json(services::users_queue(&conn))
