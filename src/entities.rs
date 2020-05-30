@@ -1,11 +1,11 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::io::Cursor;
 
 use rocket::http::ContentType;
 use rocket::request::Request;
 use rocket::response::{self, Responder, Response};
 use serde::Serialize;
-
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct User {
@@ -15,11 +15,11 @@ pub struct User {
 }
 
 impl User {
-    pub fn from_map(map: &HashMap<String, String>) -> Result<User, String> {
-        let nickname = map.get("nickname").ok_or("bio field not present")?.to_string();
-        let id = map.get(&nickname).ok_or(format!("{} field not present", nickname))?.to_string();
-        let bio = map.get("bio").ok_or("bio field not present")?.to_string();
-        Ok(User {
+    pub fn from_map(map: &HashMap<String, String>) -> Option<User> {
+        let nickname = map.get("nickname")?.to_string();
+        let id = map.get(&nickname)?.to_string();
+        let bio = map.get("bio")?.to_string();
+        Some(User {
             nickname,
             id,
             bio,

@@ -3,15 +3,16 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate rocket_contrib;
 
+use rocket::Route;
+use rocket_contrib::databases::redis::Connection;
+
+use controllers::*;
+
 mod entities;
 mod controllers;
 mod services;
 #[allow(dead_code)]
 mod redis_keys;
-
-use rocket_contrib::databases::redis::Connection;
-use controllers::*;
-use rocket::Route;
 
 #[database("niccolgur_redis")]
 pub struct NiccDbConn(Connection);
@@ -28,6 +29,10 @@ fn controllers() -> Vec<Route> {
         users_full,
         /* IMAGES */
         image,
+        /* SEASONS */
+        season,
+        season_last,
+        season_last_full
     ]
 }
 
