@@ -6,6 +6,7 @@ use rocket::http::ContentType;
 use rocket::request::Request;
 use rocket::response::{self, Responder, Response};
 use serde::Serialize;
+use std::option::NoneError;
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct User {
@@ -15,11 +16,11 @@ pub struct User {
 }
 
 impl User {
-    pub fn from_map(map: &HashMap<String, String>) -> Option<User> {
+    pub fn from_map(map: &HashMap<String, String>) -> Result<User, NoneError> {
         let nickname = map.get("nickname")?.to_string();
         let id = map.get(&nickname)?.to_string();
         let bio = map.get("bio")?.to_string();
-        Some(User {
+        Ok(User {
             nickname,
             id,
             bio,

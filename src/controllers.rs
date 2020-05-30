@@ -60,7 +60,7 @@ pub fn image(conn: NiccDbConn, id: String) -> Content<Result<Vec<u8>, impl Error
 ***************************************************************************************************/
 
 #[get("/seasons/id/<id>")]
-pub fn season(conn: NiccDbConn, id: String) -> Result<Jsfon<Vec<String>>, impl Error> {
+pub fn season(conn: NiccDbConn, id: String) -> Result<Json<Vec<String>>, impl Error> {
     services::season(&conn, &id).map(Json)
 }
 

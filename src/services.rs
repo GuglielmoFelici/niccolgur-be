@@ -19,12 +19,12 @@ pub fn users(conn: &NiccDbConn) -> RedisResult<HashSet<String>> {
     conn.smembers(compose!(USER, INDEX))
 }
 
-pub fn user(conn: &NiccDbConn, id: &str) -> RedisResult<User> {
-    let map = conn.0.hgetall(compose!(USER, id))?;
-    match User::from_map(&map) {
-        Some(User) => Ok(User),
-        None =>
-    }
+pub fn user(conn: &NiccDbConn, id: &str) -> Result<User, impl Error> {
+    let map = match conn.0.hgetall(compose!(USER, id)) {
+        Ok(mp) => mp,
+        Err(e) => return Err(e),
+    };
+    User::from_map(&map)
 }
 
 pub fn users_full(conn: &NiccDbConn) -> Result<HashSet<User>, impl Error> {
