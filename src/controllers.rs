@@ -5,6 +5,7 @@ use crate::NiccDbConn;
 use crate::services::{self};
 use rocket::response::Content;
 use rocket::http::ContentType;
+use rocket_contrib::databases::r2d2_redis::redis::RedisError;
 
 #[get("/hello")]
 pub fn hello() -> &'static str {
@@ -16,12 +17,12 @@ pub fn hello() -> &'static str {
 
 #[get("/queue")]
 pub fn queue(conn: &NiccDbConn) -> Json<Vec<String>> {
-    Json(services::queue(&conn))
+    Json(services::queue(&conn)?)
 }
 
 #[get("/queue/full")]
-pub fn users_queue(conn: NiccDbConn) -> Json<Vec<User>> {
-    Json(services::users_queue(&conn))
+pub fn queue_users(conn: NiccDbConn) -> Result<Json<Vec<User>>, RedisError> {
+    services::queue_users(&conn).map(Json)
 }
 
 /********************************************* Users ***********************************************
@@ -29,18 +30,18 @@ pub fn users_queue(conn: NiccDbConn) -> Json<Vec<User>> {
 
 
 #[get("/users")]
-pub fn users(conn: NiccDbConn) -> Json<HashSet<String>> {
-    Json(services::users(&conn))
+pub fn users(conn: NiccDbConn) -> Result<Json<HashSet<String>>, RedisError> {
+    services::users(&conn).map(Json)
 }
 
 #[get("/users/full")]
-pub fn users_full(conn: NiccDbConn) -> Json<HashSet<User>> {
-    Json(services::users_full(&conn))
+pub fn users_full(conn: NiccDbConn) -> Result<Json<HashSet<User>>, RedisError> {
+    services::users_full(&conn).map(Json)
 }
 
 #[get("/users/id/<id>")]
-pub fn user(conn: NiccDbConn, id: String) -> Json<Option<User>> {
-    Json(services::user(&conn, &id))
+pub fn user(conn: NiccDbConn, id: String) -> Result<Json<User>, RedisError> {
+    services::user(&conn, &id).map(Json)
 }
 
 
@@ -48,6 +49,19 @@ pub fn user(conn: NiccDbConn, id: String) -> Json<Option<User>> {
 ***************************************************************************************************/
 
 #[get("/images/id/<id>")]
-pub fn image(conn: NiccDbConn, id: String) -> Content<Option<Vec<u8>>> {
+pub fn image(conn: NiccDbConn, id: String) -> Content<Result<Vec<u8>, RedisError>> {
+    Content(ContentType::JPEG, services::image(&conn, &id))
+}
+
+/********************************************* Seasons *********************************************
+***************************************************************************************************/
+
+#[get("/seasons/last")]
+pub fn season_last(conn: NiccDbConn) -> Result<Json<Vec<String>>, impl Error> {
+    .map(Json)
+}
+
+#[get("/seasons/last/full")]
+pub fn season_last_full(conn: NiccDbConn) -> Content<Option<Vec<u8>>> {
     Content(ContentType::JPEG, services::image(&conn, &id))
 }

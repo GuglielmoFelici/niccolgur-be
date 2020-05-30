@@ -21,7 +21,7 @@ fn controllers() -> Vec<Route> {
         /* HELLO */
         hello,
         /* QUEUE */
-        users_queue,
+        queue_users,
         /* USER */
         user,
         users,
