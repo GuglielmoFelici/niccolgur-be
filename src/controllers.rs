@@ -1,14 +1,13 @@
 use std::collections::HashSet;
-use std::error::Error;
 
 use rocket::http::ContentType;
 use rocket::response::Content;
-use rocket_contrib::databases::r2d2_redis::redis::RedisError;
 use rocket_contrib::json::Json;
 
 use crate::entities::*;
 use crate::NiccDbConn;
 use crate::services::{self};
+use crate::errors::{ControllerResult, ControllerStreamResult};
 
 #[get("/hello")]
 pub fn hello() -> &'static str {
@@ -19,12 +18,12 @@ pub fn hello() -> &'static str {
 ***************************************************************************************************/
 
 #[get("/queue")]
-pub fn queue(conn: &NiccDbConn) -> Json<Vec<String>> {
-    Json(services::queue(&conn)?)
+pub fn queue(conn: NiccDbConn) -> ControllerResult<Vec<String>> {
+    Ok(Json(services::queue(&conn)?))
 }
 
 #[get("/queue/full")]
-pub fn queue_users(conn: NiccDbConn) -> Result<Json<Vec<User>>, impl Error> {
+pub fn queue_users(conn: NiccDbConn) -> ControllerResult<Vec<User>> {
     services::queue_users(&conn).map(Json)
 }
 
@@ -33,18 +32,17 @@ pub fn queue_users(conn: NiccDbConn) -> Result<Json<Vec<User>>, impl Error> {
 
 
 #[get("/users")]
-pub fn users(conn: NiccDbConn) -> Result<Json<HashSet<String>>, impl Error> {
+pub fn users(conn: NiccDbConn) -> ControllerResult<HashSet<String>> {
     services::users(&conn).map(Json)
 }
 
 #[get("/users/full")]
-pub fn users_full(conn: NiccDbConn) -> Result<Json<HashSet<User>>, impl Error> {
+pub fn users_full(conn: NiccDbConn) -> ControllerResult<HashSet<User>> {
     services::users_full(&conn).map(Json)
 }
 
 #[get("/users/id/<id>")]
-pub fn user(conn: NiccDbConn, id: String) -> Result<Json<User>, impl Error> {
-    services::user(&conn, &id).map(Json)
+pub fn user(conn: NiccDbConn, id: String) -> ControllerResult<User> { services::user(&conn, &id).map(Json)
 }
 
 
@@ -52,7 +50,7 @@ pub fn user(conn: NiccDbConn, id: String) -> Result<Json<User>, impl Error> {
 ***************************************************************************************************/
 
 #[get("/images/id/<id>")]
-pub fn image(conn: NiccDbConn, id: String) -> Content<Result<Vec<u8>, impl Error>> {
+pub fn image(conn: NiccDbConn, id: String) -> Content<ControllerStreamResult> {
     Content(ContentType::JPEG, services::image(&conn, &id))
 }
 
@@ -60,16 +58,16 @@ pub fn image(conn: NiccDbConn, id: String) -> Content<Result<Vec<u8>, impl Error
 ***************************************************************************************************/
 
 #[get("/seasons/id/<id>")]
-pub fn season(conn: NiccDbConn, id: String) -> Result<Json<Vec<String>>, impl Error> {
+pub fn season(conn: NiccDbConn, id: String) -> ControllerResult<Vec<String>> {
     services::season(&conn, &id).map(Json)
 }
 
 #[get("/seasons/last")]
-pub fn season_last(conn: NiccDbConn) -> Result<Json<Vec<String>>, impl Error> {
+pub fn season_last(conn: NiccDbConn) -> ControllerResult<Vec<String>> {
     services::season_last(&conn).map(Json)
 }
 
 #[get("/seasons/last/full")]
-pub fn season_last_full(conn: NiccDbConn) -> Result<Json<Vec<String>>, impl Error> {
+pub fn season_last_full(conn: NiccDbConn) -> ControllerResult<Vec<Niccolgur>> {
     services::season_last_full(&conn).map(Json)
 }

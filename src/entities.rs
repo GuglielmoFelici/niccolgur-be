@@ -1,12 +1,7 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::io::Cursor;
-
-use rocket::http::ContentType;
-use rocket::request::Request;
-use rocket::response::{self, Responder, Response};
 use serde::Serialize;
-use std::option::NoneError;
+use crate::errors::{EntityError, EntityResult};
+
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct User {
@@ -16,10 +11,10 @@ pub struct User {
 }
 
 impl User {
-    pub fn from_map(map: &HashMap<String, String>) -> Result<User, NoneError> {
-        let nickname = map.get("nickname")?.to_string();
-        let id = map.get(&nickname)?.to_string();
-        let bio = map.get("bio")?.to_string();
+    pub fn from_map(map: &HashMap<String, String>) -> EntityResult<User> {
+        let nickname = entity_key(&map, "nickname")?;
+        let id = entity_key(&map, &nickname)?;
+        let bio = entity_key(&map, "bio")?;
         Ok(User {
             nickname,
             id,
@@ -30,17 +25,23 @@ impl User {
 
 #[derive(Debug, Serialize)]
 pub struct Niccolgur {
-    master: String,
-    movie_id: String,
-    members: Vec<String>,
-    date: String,
+    pub master: String,
+    pub movie_id: String,
+    pub members: Vec<String>,
+    pub date: String,
 }
 
-// impl<'r> Responder<'r> for User { // TODO
-//     fn respond_to(self, _: &Request) -> response::Result<'r> {
-//         Response::build()
-//             .sized_body(Cursor::new(format!("{:?}", self)))
-//             .header(ContentType::new("text", "plain"))
-//             .ok()
-//     }
-// }
+impl Niccolgur {
+    pub fn from_map(map: &HashMap<String, String>) -> EntityResult<Niccolgur> {
+        Ok(Niccolgur {
+            master: entity_key(&map, "master")?,
+            movie_id: entity_key(&map, "movie")?,
+            members: vec![],
+            date: entity_key(&map, "date")?,
+        })
+    }
+}
+
+fn entity_key(map: &HashMap<String, String>, key: &str) -> EntityResult<String> {
+    Ok(map.get(key).ok_or(EntityError)?.to_string())
+}

@@ -11,6 +11,7 @@ use controllers::*;
 mod entities;
 mod controllers;
 mod services;
+mod errors;
 #[allow(dead_code)]
 mod redis_keys;
 
