@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use serde::Serialize;
 use crate::errors::{EntityError, EntityResult};
 
@@ -23,7 +23,7 @@ impl User {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct Niccolgur {
     pub master: String,
     pub movie_id: String,

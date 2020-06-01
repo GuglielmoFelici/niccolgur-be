@@ -46,13 +46,13 @@ pub fn image(conn: &NiccDbConn, id: &str) -> ServiceResult<Vec<u8>> {
 ***************************************************************************************************/
 
 pub fn niccolgur_members(conn: &NiccDbConn, id: &str) -> ServiceResult<Vec<String>> {
-    Ok(conn.0.lrange(compose!(PARTICIPANTS, id), 0, -1)?)
+    Ok(conn.0.smembers(compose!(PARTICIPANTS, id))?)
 }
 
 pub fn niccolgur(conn: &NiccDbConn, id: &str) -> ServiceResult<Niccolgur> {
     let map = conn.hgetall(compose!(NICCOLGUR, id))?;
     let mut nicc = Niccolgur::from_map(&map)?;
-    nicc.members = niccolgur_members(conn, &id)?;
+    nicc.members = niccolgur_members(conn, &id)?.to_vec();
     Ok(nicc)
 }
 
