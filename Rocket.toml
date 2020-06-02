@@ -1,2 +1,3 @@
 [global.databases]
-niccolgur_redis = { url = "redis://127.0.0.1:6379" }
+#niccolgur_redis = { url = "redis://127.0.0.1:6379" }
+niccolgur_redis = { url = "redis://192.168.1.2:6379" }

@@ -63,16 +63,18 @@ pub fn season(conn: &NiccDbConn, id: &str) -> ServiceResult<Vec<String>> {
     Ok(conn.lrange(compose!(SEASON, id), 0, -1)?)
 }
 
+pub fn seasons_count(conn: &NiccDbConn) -> ServiceResult<String> {
+    conn.smembers::<String, HashSet<String>>(compose!(SEASON, INDEX))?.iter().max().ok_or(ServiceError).map(String::to_owned)
+}
+
 pub fn season_full(conn: &NiccDbConn, id: &str) -> ServiceResult<Vec<Niccolgur>> {
     Ok(season(conn, id)?.iter().filter_map(|nicc| niccolgur(conn, nicc).ok()).collect())
 }
 
 pub fn season_last(conn: &NiccDbConn) -> ServiceResult<Vec<String>> {
-    let idx: HashSet<String> = conn.smembers(compose!(SEASON, INDEX))?;
-    season(conn, idx.iter().max().ok_or(ServiceError)?)
+    season(conn, &seasons_count(conn)?)
 }
 
 pub fn season_last_full(conn: &NiccDbConn) -> ServiceResult<Vec<Niccolgur>> {
-    let idx: HashSet<String> = conn.smembers(compose!(SEASON, INDEX))?;
-    season_full(conn, idx.iter().max().ok_or(ServiceError)?)
+    season_full(conn, &seasons_count(conn)?)
 }

@@ -10,6 +10,7 @@ use controllers::*;
 
 mod entities;
 mod controllers;
+#[allow(dead_code)]
 mod services;
 mod errors;
 #[allow(dead_code)]
@@ -32,8 +33,10 @@ fn controllers() -> Vec<Route> {
         image,
         /* SEASONS */
         season,
+        season_full,
         season_last,
-        season_last_full
+        season_last_full,
+        seasons_count
     ]
 }
 

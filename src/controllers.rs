@@ -9,7 +9,7 @@ use crate::NiccDbConn;
 use crate::services::{self};
 use crate::errors::{ControllerResult, ControllerStreamResult};
 
-#[get("/hello")]
+#[get("/")]
 pub fn hello() -> &'static str {
     "Hello cane laido!"
 }
@@ -60,6 +60,16 @@ pub fn image(conn: NiccDbConn, id: String) -> Content<ControllerStreamResult> {
 #[get("/seasons/id/<id>")]
 pub fn season(conn: NiccDbConn, id: String) -> ControllerResult<Vec<String>> {
     services::season(&conn, &id).map(Json)
+}
+
+#[get("/seasons/id/<id>/full")]
+pub fn season_full(conn: NiccDbConn, id: String) -> ControllerResult<Vec<Niccolgur>> {
+    services::season_full(&conn, &id).map(Json)
+}
+
+#[get("/seasons/count")]
+pub fn seasons_count(conn: NiccDbConn) -> ControllerResult<String> {
+    services::seasons_count(&conn).map(Json)
 }
 
 #[get("/seasons/last")]
