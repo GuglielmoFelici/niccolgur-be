@@ -12,9 +12,11 @@ mod entities;
 mod controllers;
 #[allow(dead_code)]
 mod services;
-mod errors;
+mod responses;
 #[allow(dead_code)]
 mod redis_keys;
+mod views;
+mod auth;
 
 #[database("niccolgur_redis")]
 pub struct NiccDbConn(Connection);
@@ -23,12 +25,18 @@ fn controllers() -> Vec<Route> {
     routes![
         /* HELLO */
         hello,
+        hello_protected,
+        pre_flight, // TODO elaborare...
         /* QUEUE */
+        queue,
         queue_users,
         /* USER */
         user,
         users,
         users_full,
+        /* AUTH */
+        login,
+        token_data,
         /* IMAGES */
         image,
         /* SEASONS */

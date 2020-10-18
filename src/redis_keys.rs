@@ -7,6 +7,10 @@ pub const SEASON: &str = "season";
 pub const IMAGE: &str = "image";
 pub const QUEUE: &str = "queue";
 
+/************************************ Field keys **************************************************/
+
+pub const USER_PW: &str = "password";
+
 /************************************ Secondary keys **********************************************/
 
 pub const DELIM: &str = ":";

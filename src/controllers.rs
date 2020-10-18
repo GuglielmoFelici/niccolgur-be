@@ -1,17 +1,42 @@
 use std::collections::HashSet;
+use std::io::Cursor;
 
+use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation};
+use rocket::{Response, response};
 use rocket::http::ContentType;
-use rocket::response::Content;
+use rocket::http::hyper::header::Bearer;
+use rocket::http::Status;
+use rocket::response::{Body, Content, Responder};
 use rocket_contrib::json::Json;
+use serde::{Serialize, Deserialize};
 
 use crate::entities::*;
 use crate::NiccDbConn;
+use crate::responses::{ControllerError, ControllerResult, ControllerStreamResult};
 use crate::services::{self};
-use crate::errors::{ControllerResult, ControllerStreamResult};
+use crate::views::{UserView, TokenView};
+use crate::auth::{generate_token, TokenVerifier, Claims};
+use jsonwebtoken::errors::Error;
 
 #[get("/")]
 pub fn hello() -> &'static str {
     "Hello cane laido!"
+}
+
+#[get("/protected")]
+pub fn hello_protected(guard: TokenVerifier) -> &'static str {
+    "Hello cane laido loggato!"
+}
+
+// TODO capire come rispondere bene
+#[options("/login")]
+pub fn pre_flight() -> Response<'static> {
+    Response::build().raw_header("Access-Control-Allow-Origin", "*").finalize()
+}
+
+#[get("/logindata/<token>")]
+pub fn token_data(token: String) -> Result<String, Error> {
+    Ok(jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("secret".as_ref()), &Validation::new(Algorithm::HS256) )?.claims.sub)
 }
 
 /********************************************* Queue ***********************************************
@@ -19,12 +44,23 @@ pub fn hello() -> &'static str {
 
 #[get("/queue")]
 pub fn queue(conn: NiccDbConn) -> ControllerResult<Vec<String>> {
-    Ok(Json(services::queue(&conn)?))
+    Ok(Json(
+        services::queue(&conn)?
+            .unwrap_or_default()
+    ))
 }
 
 #[get("/queue/full")]
-pub fn queue_users(conn: NiccDbConn) -> ControllerResult<Vec<User>> {
-    services::queue_users(&conn).map(Json)
+pub fn queue_users(conn: NiccDbConn) -> ControllerResult<Vec<UserView>> {
+    Ok(
+        Json(
+            services::queue_users(&conn)?
+                .unwrap_or_default()
+                .iter()
+                .map(|usr| UserView::from(usr))
+                .collect()
+        )
+    )
 }
 
 /********************************************* Users ***********************************************
@@ -33,16 +69,45 @@ pub fn queue_users(conn: NiccDbConn) -> ControllerResult<Vec<User>> {
 
 #[get("/users")]
 pub fn users(conn: NiccDbConn) -> ControllerResult<HashSet<String>> {
-    services::users(&conn).map(Json)
+    Ok(
+        Json(services::users(&conn)?.unwrap_or_default())
+    )
 }
 
 #[get("/users/full")]
-pub fn users_full(conn: NiccDbConn) -> ControllerResult<HashSet<User>> {
-    services::users_full(&conn).map(Json)
+pub fn users_full(conn: NiccDbConn) -> ControllerResult<HashSet<UserView>> {
+    Ok(
+        Json(
+            services::users_full(&conn)?
+                .unwrap_or_default()
+                .iter()
+                .map(|usr| UserView::from(usr))
+                .collect()
+        )
+    )
 }
 
 #[get("/users/id/<id>")]
-pub fn user(conn: NiccDbConn, id: String) -> ControllerResult<User> { services::user(&conn, &id).map(Json)
+pub fn user(conn: NiccDbConn, id: String) -> ControllerResult<UserView> {
+    Ok(
+        Json(UserView::from(
+            services::user(&conn, &id)?
+                .ok_or(ControllerError(Status::NotFound))?
+        ))
+    )
+}
+
+/********************************************* Auth ************************************************
+***************************************************************************************************/
+
+#[post("/login", data = "<credentials>")]
+pub fn login<'r>(conn: NiccDbConn, credentials: Json<Credentials>) -> ControllerResult<TokenView> { //TODO return value
+    services::match_auth(&conn, &credentials)?
+        .and_then(|view|
+            Some(
+                generate_token(&credentials.username).ok()?)
+            )
+        .ok_or(ControllerError(Status::Unauthorized))
 }
 
 
@@ -50,8 +115,8 @@ pub fn user(conn: NiccDbConn, id: String) -> ControllerResult<User> { services::
 ***************************************************************************************************/
 
 #[get("/images/id/<id>")]
-pub fn image(conn: NiccDbConn, id: String) -> Content<ControllerStreamResult> {
-    Content(ContentType::JPEG, services::image(&conn, &id))
+pub fn image(conn: NiccDbConn, id: String) -> ControllerStreamResult {
+    Content(ContentType::JPEG, Ok(services::image(&conn, &id)?.unwrap_or_default())).1
 }
 
 /********************************************* Seasons *********************************************
@@ -59,25 +124,35 @@ pub fn image(conn: NiccDbConn, id: String) -> Content<ControllerStreamResult> {
 
 #[get("/seasons/id/<id>")]
 pub fn season(conn: NiccDbConn, id: String) -> ControllerResult<Vec<String>> {
-    services::season(&conn, &id).map(Json)
+    Ok(
+        Json(services::season(&conn, &id)?.unwrap_or_default())
+    )
 }
 
 #[get("/seasons/id/<id>/full")]
 pub fn season_full(conn: NiccDbConn, id: String) -> ControllerResult<Vec<Niccolgur>> {
-    services::season_full(&conn, &id).map(Json)
+    Ok(
+        Json(services::season_full(&conn, &id)?.unwrap_or_default())
+    )
 }
 
 #[get("/seasons/count")]
 pub fn seasons_count(conn: NiccDbConn) -> ControllerResult<String> {
-    services::seasons_count(&conn).map(Json)
+    Ok(
+        Json(services::seasons_count(&conn)?.unwrap_or_default())
+    )
 }
 
 #[get("/seasons/last")]
 pub fn season_last(conn: NiccDbConn) -> ControllerResult<Vec<String>> {
-    services::season_last(&conn).map(Json)
+    Ok(
+        Json(services::season_last(&conn)?.unwrap_or_default())
+    )
 }
 
 #[get("/seasons/last/full")]
 pub fn season_last_full(conn: NiccDbConn) -> ControllerResult<Vec<Niccolgur>> {
-    services::season_last_full(&conn).map(Json)
+    Ok(
+        Json(services::season_last_full(&conn)?.unwrap_or_default())
+    )
 }

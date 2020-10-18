@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use serde::Serialize;
-use crate::errors::{EntityError, EntityResult};
+use serde::{Serialize, Deserialize};
+use crate::responses::{TransformError, TransformResult};
 
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
@@ -8,19 +8,29 @@ pub struct User {
     pub id: String,
     pub nickname: String,
     pub bio: String,
+    pub password: String,
 }
 
+// TODO usare costanti per chiavi
 impl User {
-    pub fn from_map(map: &HashMap<String, String>) -> EntityResult<User> {
+    pub fn from(map: HashMap<String, String>) -> TransformResult<User> {
         let nickname = entity_key(&map, "nickname")?;
         let id = entity_key(&map, &nickname)?;
         let bio = entity_key(&map, "bio")?;
+        let password = entity_key(&map, "password")?;
         Ok(User {
             nickname,
             id,
             bio,
+            password,
         })
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Credentials {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
@@ -32,7 +42,7 @@ pub struct Niccolgur {
 }
 
 impl Niccolgur {
-    pub fn from_map(map: &HashMap<String, String>) -> EntityResult<Niccolgur> {
+    pub fn from(map: &HashMap<String, String>) -> TransformResult<Niccolgur> {
         Ok(Niccolgur {
             master: entity_key(&map, "master")?,
             movie_id: entity_key(&map, "movie")?,
@@ -42,6 +52,6 @@ impl Niccolgur {
     }
 }
 
-fn entity_key(map: &HashMap<String, String>, key: &str) -> EntityResult<String> {
-    Ok(map.get(key).ok_or(EntityError)?.to_string())
+fn entity_key(map: &HashMap<String, String>, key: &str) -> TransformResult<String> {
+    Ok(map.get(key).ok_or(TransformError)?.to_string())
 }
