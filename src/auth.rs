@@ -20,10 +20,10 @@ pub struct Claims {
     pub exp: usize,
 }
 
-pub fn generate_token(username: &String) -> ControllerResult<TokenView> {
+pub fn generate_token(id: &String) -> ControllerResult<TokenView> {
     let expiration = 10000000000;
     let my_claims =
-        Claims { sub: username.to_owned(), exp: expiration }; // TODO token expiration
+        Claims { sub: id.to_owned(), exp: expiration }; // TODO token expiration
     let token = match encode(&Header::default(), &my_claims, &EncodingKey::from_secret(ENCODE_KEY)) {
         Ok(tkn) => tkn,
         Err(_) => return Err(ControllerError(Status::InternalServerError))
@@ -31,7 +31,7 @@ pub fn generate_token(username: &String) -> ControllerResult<TokenView> {
     Ok(
         Json(
             TokenView {
-                token,
+                payload: token,
                 expiration,
             })
     )

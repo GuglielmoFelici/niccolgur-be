@@ -17,6 +17,7 @@ use crate::services::{self};
 use crate::views::{UserView, TokenView};
 use crate::auth::{generate_token, TokenVerifier, Claims};
 use jsonwebtoken::errors::Error;
+use std::path::PathBuf;
 
 #[get("/")]
 pub fn hello() -> &'static str {
@@ -29,8 +30,8 @@ pub fn hello_protected(guard: TokenVerifier) -> &'static str {
 }
 
 // TODO capire come rispondere bene
-#[options("/login")]
-pub fn pre_flight() -> Response<'static> {
+#[options("/<path..>")]
+pub fn pre_flight(path: PathBuf) -> Response<'static> {
     Response::build().raw_header("Access-Control-Allow-Origin", "*").finalize()
 }
 
@@ -105,7 +106,7 @@ pub fn login<'r>(conn: NiccDbConn, credentials: Json<Credentials>) -> Controller
     services::match_auth(&conn, &credentials)?
         .and_then(|view|
             Some(
-                generate_token(&credentials.username).ok()?)
+                generate_token(&view.id).ok()?)
             )
         .ok_or(ControllerError(Status::Unauthorized))
 }

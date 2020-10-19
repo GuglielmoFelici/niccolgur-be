@@ -42,7 +42,7 @@ impl From<&User> for UserView {
 
 #[derive(Serialize)]
 pub struct TokenView {
-    pub token: String,
+    pub payload: String,
     pub expiration: usize,
 }
 
