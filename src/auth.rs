@@ -21,7 +21,7 @@ pub struct Claims {
 }
 
 pub fn generate_token(id: &String) -> ControllerResult<TokenView> {
-    let expiration = 10000000000;
+    let expiration = 100000000;
     let my_claims =
         Claims { sub: id.to_owned(), exp: expiration }; // TODO token expiration
     let token = match encode(&Header::default(), &my_claims, &EncodingKey::from_secret(ENCODE_KEY)) {
