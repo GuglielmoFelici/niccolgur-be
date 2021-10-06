@@ -1,12 +1,13 @@
-use jsonwebtoken::{encode, Header, EncodingKey, Validation, decode, DecodingKey, Algorithm, TokenData};
+use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, TokenData, Validation};
 use jsonwebtoken::errors::{Error, ErrorKind};
-use serde::{Serialize, Deserialize};
+use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
-use rocket::http::Status;
-use crate::views::TokenView;
-use crate::responses::{ControllerResult, ControllerError};
 use rocket_contrib::json::Json;
+use serde::{Deserialize, Serialize};
+
+use crate::responses::{ControllerError, ControllerResult};
+use crate::views::TokenView;
 
 // TODO questo modulo è abbastanza da rivedere.
 

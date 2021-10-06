@@ -1,17 +1,7 @@
-use std::io::Cursor;
-use std::str::FromStr;
-
-use rocket::{Request, response, Response};
-use rocket::http::{Accept, Header};
-use rocket::http::hyper::header::{Authorization, Bearer};
-use rocket::response::Responder;
-use rocket_contrib::json::Json;
-use serde::export::fmt::Display;
+//use rocket::http::hyper::header::{Authorization, Bearer};
 use serde::Serialize;
 
 use crate::entities::User;
-use std::fmt::Formatter;
-use core::fmt;
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct UserView {

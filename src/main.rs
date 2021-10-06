@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene, decl_macro, try_trait)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate rocket_contrib;
@@ -16,7 +16,6 @@ mod responses;
 #[allow(dead_code)]
 mod redis_keys;
 mod views;
-mod auth;
 
 #[database("niccolgur_redis")]
 pub struct NiccDbConn(Connection);
@@ -25,7 +24,6 @@ fn controllers() -> Vec<Route> {
     routes![
         /* HELLO */
         hello,
-        hello_protected,
         pre_flight, // TODO elaborare...
         /* QUEUE */
         queue,
@@ -35,8 +33,9 @@ fn controllers() -> Vec<Route> {
         users,
         users_full,
         /* AUTH */
+        /*hello_protected,
         login,
-        token_data,
+        token_data,*/
         /* IMAGES */
         image,
         /* SEASONS */

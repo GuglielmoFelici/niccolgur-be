@@ -1,33 +1,28 @@
 use std::collections::HashSet;
-use std::io::Cursor;
+use std::path::PathBuf;
 
-use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation};
-use rocket::{Response, response};
+//use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation};
+//use jsonwebtoken::errors::Error;
+use rocket::{Response};
 use rocket::http::ContentType;
-use rocket::http::hyper::header::Bearer;
+//use rocket::http::hyper::header::Bearer;
 use rocket::http::Status;
-use rocket::response::{Body, Content, Responder};
+use rocket::response::{Content};
 use rocket_contrib::json::Json;
-use serde::{Serialize, Deserialize};
 
+//use crate::auth::{Claims, generate_token, TokenVerifier};
 use crate::entities::*;
 use crate::NiccDbConn;
 use crate::responses::{ControllerError, ControllerResult, ControllerStreamResult};
 use crate::services::{self};
-use crate::views::{UserView, TokenView};
-use crate::auth::{generate_token, TokenVerifier, Claims};
-use jsonwebtoken::errors::Error;
-use std::path::PathBuf;
+use crate::views::{ UserView};
 
 #[get("/")]
 pub fn hello() -> &'static str {
     "Hello cane laido!"
 }
 
-#[get("/protected")]
-pub fn hello_protected(guard: TokenVerifier) -> &'static str {
-    "Hello cane laido loggato!"
-}
+
 
 // TODO capire come rispondere bene
 #[options("/<path..>")]
@@ -35,10 +30,7 @@ pub fn pre_flight(path: PathBuf) -> Response<'static> {
     Response::build().raw_header("Access-Control-Allow-Origin", "*").finalize()
 }
 
-#[get("/logindata/<token>")]
-pub fn token_data(token: String) -> Result<String, Error> {
-    Ok(jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("secret".as_ref()), &Validation::new(Algorithm::HS256) )?.claims.sub)
-}
+
 
 /********************************************* Queue ***********************************************
 ***************************************************************************************************/
@@ -101,15 +93,25 @@ pub fn user(conn: NiccDbConn, id: String) -> ControllerResult<UserView> {
 /********************************************* Auth ************************************************
 ***************************************************************************************************/
 
-#[post("/login", data = "<credentials>")]
-pub fn login<'r>(conn: NiccDbConn, credentials: Json<Credentials>) -> ControllerResult<TokenView> { //TODO return value
-    services::match_auth(&conn, &credentials)?
-        .and_then(|view|
-            Some(
-                generate_token(&view.id).ok()?)
-            )
-        .ok_or(ControllerError(Status::Unauthorized))
-}
+//#[get("/protected")]
+//pub fn hello_protected(guard: TokenVerifier) -> &'static str {
+//    "Hello cane laido loggato!"
+//}
+
+//#[post("/login", data = "<credentials>")]
+//pub fn login<'r>(conn: NiccDbConn, credentials: Json<Credentials>) -> ControllerResult<TokenView> { //TODO return value
+//    services::match_auth(&conn, &credentials)?
+//        .and_then(|view|
+//            Some(
+//                generate_token(&view.id).ok()?)
+//            )
+//        .ok_or(ControllerError(Status::Unauthorized))
+//}
+
+//#[get("/logindata/<token>")]
+//pub fn token_data(token: String) -> Result<String, Error> {
+//    Ok(jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("secret".as_ref()), &Validation::new(Algorithm::HS256) )?.claims.sub)
+//}
 
 
 /********************************************* Images **********************************************

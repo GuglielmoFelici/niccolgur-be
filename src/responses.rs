@@ -1,11 +1,11 @@
-use std::fmt;
 use std::error::Error;
-use rocket_contrib::databases::r2d2_redis::redis::RedisError;
-use rocket_contrib::json::{Json, JsonValue};
-use rocket::response::Responder;
+use std::fmt;
+
 use rocket::{Request, response};
-use rocket::http::{Status, ContentType};
-use rocket::http::hyper::header::Bearer;
+use rocket::http::{Status};
+use rocket::response::Responder;
+use rocket_contrib::databases::r2d2_redis::redis::RedisError;
+use rocket_contrib::json::{Json};
 
 /********************************************* Entities ********************************************
 ***************************************************************************************************/

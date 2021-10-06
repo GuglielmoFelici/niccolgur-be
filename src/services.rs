@@ -1,13 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
-use rocket_contrib::databases::r2d2_redis::redis::RedisResult;
 use rocket_contrib::databases::redis::Commands;
 
 use crate::compose;
 use crate::entities::*;
-use crate::responses::{ServiceError, ServiceResult};
 use crate::NiccDbConn;
 use crate::redis_keys::*;
+use crate::responses::{ServiceError, ServiceResult};
 use crate::views::UserView;
 
 /********************************************* Users ***********************************************
@@ -153,8 +152,9 @@ pub fn seasons_count(conn: &NiccDbConn) -> ServiceResult<String> {
     Ok(
         conn.0.smembers::<String, HashSet<String>>(compose!(SEASON, INDEX))?
             .iter()
+            .map(|s| s.parse().unwrap_or(0))
             .max()
-            .map(String::to_owned)
+            .map(|i| i.to_string())
     )
 }
 

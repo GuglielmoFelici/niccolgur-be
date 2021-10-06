@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use serde::{Serialize, Deserialize};
-use crate::responses::{TransformError, TransformResult};
 
+use serde::{Deserialize, Serialize};
+
+use crate::responses::{TransformError, TransformResult};
 
 #[derive(Debug, Serialize, Hash, PartialEq, Eq)]
 pub struct User {
